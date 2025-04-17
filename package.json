@@ -2,7 +2,6 @@
   "name": "showroom-ar-motor",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://septarzk.github.io/armotor",
   "dependencies": {
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
@@ -44,3 +43,4 @@
     "gh-pages": "^6.1.1"
   }
 }
+
