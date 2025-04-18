@@ -140,3 +140,14 @@ body {
   margin-top: 10px;
   cursor: pointer;
 }
+
+.edit {
+  background-color: #ffc107;
+  color: black;
+  padding: 8px;
+  width: 100%;
+  border: none;
+  border-radius: 6px;
+  margin-top: 8px;
+  cursor: pointer;
+}

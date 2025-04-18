@@ -6,6 +6,7 @@ import {
   getDocs,
   deleteDoc,
   doc,
+  updateDoc,
   serverTimestamp,
   query,
   orderBy,
@@ -22,6 +23,7 @@ function App() {
     deskripsi: "",
     gambar: "",
   });
+  const [editId, setEditId] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loginData, setLoginData] = useState({ username: "", password: "" });
   const [showForm, setShowForm] = useState(false);
@@ -59,15 +61,22 @@ function App() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const tanggal = new Date().toLocaleDateString("id-ID");
-    const newMobil = {
-      ...formData,
-      tanggalUpload: tanggal,
-      status: "Tersedia",
-      timestamp: serverTimestamp(),
-    };
-    const docRef = await addDoc(mobilCollection, newMobil);
-    setMobilList([{ id: docRef.id, ...newMobil }, ...mobilList]);
+    if (editId) {
+      const docRef = doc(db, "mobil", editId);
+      await updateDoc(docRef, formData);
+      setMobilList(mobilList.map((mobil) => (mobil.id === editId ? { id: editId, ...formData } : mobil)));
+      setEditId(null);
+    } else {
+      const tanggal = new Date().toLocaleDateString("id-ID");
+      const newMobil = {
+        ...formData,
+        tanggalUpload: tanggal,
+        status: "Tersedia",
+        timestamp: serverTimestamp(),
+      };
+      const docRef = await addDoc(mobilCollection, newMobil);
+      setMobilList([{ id: docRef.id, ...newMobil }, ...mobilList]);
+    }
     setFormData({ nama: "", harga: "", tahun: "", km: "", deskripsi: "", gambar: "" });
     setShowForm(false);
   };
@@ -77,6 +86,19 @@ function App() {
       await deleteDoc(doc(db, "mobil", id));
       setMobilList(mobilList.filter((mobil) => mobil.id !== id));
     }
+  };
+
+  const handleEdit = (mobil) => {
+    setFormData({
+      nama: mobil.nama,
+      harga: mobil.harga,
+      tahun: mobil.tahun,
+      km: mobil.km,
+      deskripsi: mobil.deskripsi,
+      gambar: mobil.gambar,
+    });
+    setEditId(mobil.id);
+    setShowForm(true);
   };
 
   return (
@@ -98,7 +120,7 @@ function App() {
       {isAdmin && (
         <div className="admin-panel">
           <button onClick={() => setShowForm(!showForm)}>
-            {showForm ? "Tutup Form Tambah" : "Tambah Mobil"}
+            {showForm ? "Tutup Form Tambah" : editId ? "Batal Edit" : "Tambah Mobil"}
           </button>
           <button className="logout" onClick={() => setIsAdmin(false)}>Logout</button>
         </div>
@@ -112,7 +134,7 @@ function App() {
           <input name="km" placeholder="Kilometer" value={formData.km} onChange={handleChange} />
           <input name="deskripsi" placeholder="Deskripsi" value={formData.deskripsi} onChange={handleChange} />
           <input name="gambar" placeholder="Link Gambar" value={formData.gambar} onChange={handleChange} />
-          <button type="submit">Simpan Mobil</button>
+          <button type="submit">{editId ? "Update Mobil" : "Simpan Mobil"}</button>
         </form>
       )}
 
@@ -135,7 +157,10 @@ function App() {
             </a>
             <a href="https://g.co/kgs/T63LZf4" target="_blank" rel="noopener noreferrer" className="maps">Lihat di Google Maps</a>
             {isAdmin && (
-              <button onClick={() => handleDelete(mobil.id)} className="hapus">Hapus</button>
+              <>
+                <button onClick={() => handleEdit(mobil)} className="edit">Edit</button>
+                <button onClick={() => handleDelete(mobil.id)} className="hapus">Hapus</button>
+              </>
             )}
           </div>
         ))}
